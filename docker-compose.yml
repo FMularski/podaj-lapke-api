@@ -15,7 +15,10 @@ services:
   web:
     build:
       context: .
-    command: gunicorn podaj_lapke.wsgi:application --bind 0.0.0.0:8000 --reload
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py loaddata user.json &&
+             gunicorn podaj_lapke.wsgi:application --bind 0.0.0.0:8000 --reload"
     ports:
       - 8000:8000
     volumes:

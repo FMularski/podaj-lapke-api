@@ -4,6 +4,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
+from django.core.management import call_command
 
 User = get_user_model()
 
@@ -118,3 +119,9 @@ def test_create_superuser(create_superuser, params):
 
     assert user.is_staff
     assert user.is_superuser
+
+
+@pytest.mark.django_db
+def test_load_user_fixture():
+    call_command("loaddata", "user.json")
+    assert User.objects.count() == 1
