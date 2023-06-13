@@ -3,6 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=9, null=True, blank=True)
     notification_push = models.BooleanField(default=False)
     notification_email = models.BooleanField(default=False)

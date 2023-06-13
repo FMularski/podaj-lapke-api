@@ -9,26 +9,6 @@ from django.core.management import call_command
 User = get_user_model()
 
 
-@pytest.fixture
-def create_user():
-    """Provides a regular user."""
-
-    def create(**params):
-        return User.objects.create_user(**params)
-
-    return create
-
-
-@pytest.fixture
-def create_superuser():
-    """Provides a superuser."""
-
-    def create(**params):
-        return User.objects.create_superuser(**params)
-
-    return create
-
-
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "params",
@@ -123,5 +103,6 @@ def test_create_superuser(create_superuser, params):
 
 @pytest.mark.django_db
 def test_load_user_fixture():
+    """Test loading user from a fixture."""
     call_command("loaddata", "user.json")
     assert User.objects.count() == 1
