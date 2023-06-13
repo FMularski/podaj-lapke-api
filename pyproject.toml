@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "podaj-lapke-api"
+version = "0.1.0"
+description = ""
+authors = ["Filip <mularskif@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^4.2.2"
+djangorestframework = "^3.14.0"
+djangorestframework-simplejwt = "^5.2.2"
+gunicorn = "^20.1.0"
+whitenoise = "^6.4.0"
+pytest-django = "^4.5.2"
+pytest-cov = "^4.1.0"
+psycopg2 = "^2.9.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
