@@ -15,6 +15,7 @@ User = get_user_model()
     "body", ({"username": "user", "email": "user@example.com", "password": "pass123"},)
 )
 def test_register_user_201(api_client, body):
+    """Test a successful registration."""
     url = reverse("register")
     res = api_client.post(url, data=body)
 
@@ -39,7 +40,88 @@ def test_register_user_201(api_client, body):
     ),
 )
 def test_register_user_400(api_client, body):
+    """Test an unsuccessful registration."""
     url = reverse("register")
     res = api_client.post(url, data=body)
 
     assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"username": "user", "email": "user@example.com", "password": "pass123"},
+    ],
+)
+def test_login_200(create_user, api_client, body):
+    """Test a successful login."""
+    create_user(**body)
+    body.pop("email")
+
+    url = reverse("token")
+    res = api_client.post(url, data=body)
+
+    assert res.status_code == status.HTTP_200_OK
+    assert "access" in res.data.keys()
+    assert "refresh" in res.data.keys()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"username": "user"},
+        {"password": "pass123"},
+        {},
+    ],
+)
+def test_login_400(api_client, body):
+    """Test unsuccessful login - insufficient data."""
+    url = reverse("token")
+    res = api_client.post(url, data=body)
+
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"username": "user", "password": "pass123"},
+    ],
+)
+def test_login_401(api_client, body):
+    """Test unsuccessful login - invalid credentials."""
+    url = reverse("token")
+    res = api_client.post(url, data=body)
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.django_db
+def test_refresh_200(api_client, create_user):
+    """Test a successful token refresh."""
+    user = create_user(username="user", email="user@example.com", password="pass123")
+
+    token_url = reverse("token")
+    refresh_token = api_client.post(
+        token_url, {"username": user.username, "password": "pass123"}
+    ).data["refresh"]
+
+    refresh_url = reverse("refresh")
+
+    res = api_client.post(refresh_url, data={"refresh": refresh_token})
+
+    assert res.status_code == status.HTTP_200_OK
+    assert "access" in res.data.keys()
+
+
+@pytest.mark.django_db
+def test_refresh_401(api_client):
+    """Test an unseccessful token refresh - invalid token."""
+    refresh_url = reverse("refresh")
+
+    res = api_client.post(refresh_url, data={"refresh": "invalid token"})
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
