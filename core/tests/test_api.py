@@ -7,6 +7,8 @@ from django.contrib.auth.hashers import check_password
 from django.shortcuts import reverse
 from rest_framework import status
 
+from core.api import serializers
+
 User = get_user_model()
 
 
@@ -125,3 +127,29 @@ def test_refresh_401(api_client):
     res = api_client.post(refresh_url, data={"refresh": "invalid token"})
 
     assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.django_db
+def test_get_user_details_401(api_client):
+    url = reverse("me")
+    response = api_client.get(url)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.django_db
+def test_get_user_details_200(create_user, api_client):
+    user = create_user()
+    api_client.force_authenticate(user)
+    url = reverse("me")
+    response = api_client.get(url)
+
+    serializer = serializers.UserSerializer(user)
+
+    assert response.status_code == status.HTTP_200_OK
+
+    for key in response.data:
+        if not key == "avatar":
+            assert response.data[key] == serializer.data[key]
+        else:
+            assert response.data[key] == "http://testserver" + serializer.data[key]

@@ -8,6 +8,7 @@ class User(AbstractUser):
     notification_push = models.BooleanField(default=False)
     notification_email = models.BooleanField(default=False)
     notification_favourites = models.BooleanField(default=False)
+    avatar = models.ImageField(upload_to="avatars", null=True, blank=True)
 
     def __str__(self):
         return self.username
