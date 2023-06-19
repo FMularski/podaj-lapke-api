@@ -2,10 +2,13 @@
     Fixtures required for tests of the core app.
 """
 
+import os
 import tempfile
 
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
 
 User = get_user_model()
@@ -65,3 +68,16 @@ def api_client_user(create_user):
     client.force_authenticate(user=user)
 
     return client
+
+
+@pytest.fixture()
+def avatar_file():
+    content = (
+        b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x00\x00\x00\x21\xf9\x04"
+        b"\x01\x0a\x00\x01\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02"
+        b"\x02\x4c\x01\x00\x3b"
+    )
+    avatar_file = SimpleUploadedFile("avatar.gif", content, content_type="image/gif")
+    yield avatar_file
+
+    os.remove(os.path.join(settings.MEDIA_ROOT, "avatars", avatar_file.name))

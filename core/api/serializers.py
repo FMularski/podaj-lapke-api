@@ -84,3 +84,10 @@ class ChangePasswordSerializer(serializers.Serializer):
         instance.save()
 
         return instance
+
+
+class ChangeAvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("avatar",)
+        extra_kwargs = {"avatar": {"required": True}}

@@ -1,9 +1,13 @@
 """
     Test api endpoints for the core app.
 """
+import os
+
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import reverse
 from rest_framework import status
 
@@ -232,3 +236,28 @@ def test_change_password(api_client, create_user, body, xstatus):
         user.refresh_from_db()
         assert check_password(body["password"], user.password)
         assert not check_password(body["old"], user.password)
+
+
+@pytest.mark.django_db
+@pytest.mark.avatar
+def test_change_avatar_200(api_client_user, avatar_file):
+    """Test change avatar."""
+    url = reverse("avatar")
+    body = {"avatar": avatar_file}
+
+    response = api_client_user.patch(url, data=body, format="multipart")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert os.path.isfile(os.path.join(settings.MEDIA_ROOT, "avatars", avatar_file.name))
+
+
+@pytest.mark.django_db
+@pytest.mark.avatar
+def test_change_avatar_400(api_client_user):
+    url = reverse("avatar")
+    invalid_avatar = SimpleUploadedFile(
+        "avatar.png", b"invalid_content", content_type="image/x-png"
+    )
+    response = api_client_user.patch(url, data={"avatar": invalid_avatar}, format="multipart")
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST

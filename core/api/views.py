@@ -2,7 +2,7 @@
     API views of the core app.
 """
 from django.contrib.auth import get_user_model
-from rest_framework import generics
+from rest_framework import generics, parsers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -36,6 +36,18 @@ class ChangePasswordApiView(generics.UpdateAPIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     http_method_names = ("put",)
+
+    def get_object(self):
+        return self.request.user
+
+
+class ChangeAvatarApiView(generics.UpdateAPIView):
+    """Update user's avatar."""
+
+    serializer_class = serializers.ChangeAvatarSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    parser_classes = parsers.FormParser, parsers.MultiPartParser
 
     def get_object(self):
         return self.request.user
