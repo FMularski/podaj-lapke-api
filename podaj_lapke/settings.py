@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_spectacular",
     "core.apps.CoreConfig",
+    "shelters.apps.SheltersConfig",
 ]
 
 MIDDLEWARE = [
