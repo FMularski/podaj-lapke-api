@@ -3,6 +3,7 @@
 """
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.serializers import ValidationError
 
 User = get_user_model()
 
@@ -38,3 +39,12 @@ class UserSerializer(serializers.ModelSerializer):
             "notification_favourites",
             "avatar",
         )
+        read_only_fields = "id", "username", "avatar"
+
+    def validate_phone(self, value):
+        if not value.isnumeric():
+            raise ValidationError("Phone number must contain numbers only.")
+        if not len(value) == 9:
+            raise ValidationError("Phone number must be exactly 9 digits long.")
+
+        return value

@@ -18,7 +18,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
 
 
-class UserMeApiView(generics.RetrieveAPIView):
+class UserMeApiView(generics.RetrieveUpdateAPIView):
     """Get user details."""
 
     serializer_class = serializers.UserSerializer

@@ -55,3 +55,13 @@ def create_superuser():
         return User.objects.create_superuser(**params)
 
     return create
+
+
+@pytest.fixture
+def api_client_user(create_user):
+    """Provides an authenticated api client."""
+    user = create_user()
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    return client

@@ -131,6 +131,7 @@ def test_refresh_401(api_client):
 
 @pytest.mark.django_db
 def test_get_user_details_401(api_client):
+    """Test calling GET /me/ without token returns 401."""
     url = reverse("me")
     response = api_client.get(url)
 
@@ -139,6 +140,7 @@ def test_get_user_details_401(api_client):
 
 @pytest.mark.django_db
 def test_get_user_details_200(create_user, api_client):
+    """Test calling GET /me/ returns details of authenticated user."""
     user = create_user()
     api_client.force_authenticate(user)
     url = reverse("me")
@@ -153,3 +155,47 @@ def test_get_user_details_200(create_user, api_client):
             assert response.data[key] == serializer.data[key]
         else:
             assert response.data[key] == "http://testserver" + serializer.data[key]
+
+
+@pytest.mark.django_db
+def test_update_user_details_401(api_client):
+    """Test calling PATCH /me/ without token returns 401."""
+    url = reverse("me")
+    response = api_client.patch(url)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "body, xstatus",
+    (
+        (
+            {
+                "first_name": "new",
+                "last_name": "new",
+                "email": "new@example.com",
+                "phone": "234567891",
+            },
+            status.HTTP_200_OK,
+        ),
+        (
+            {"first_name": "new", "last_name": "new", "email": "new@example.com"},
+            status.HTTP_200_OK,
+        ),
+        ({"first_name": "new", "last_name": "new"}, status.HTTP_200_OK),
+        ({"first_name": "new"}, status.HTTP_200_OK),
+        ({"email": "invalid"}, status.HTTP_400_BAD_REQUEST),
+        ({"email": ""}, status.HTTP_400_BAD_REQUEST),
+        ({"phone": "123"}, status.HTTP_400_BAD_REQUEST),
+    ),
+)
+def test_update_user_details(api_client_user, body, xstatus):
+    url = reverse("me")
+    response = api_client_user.patch(url, data=body, format="json")
+
+    assert response.status_code == xstatus
+    if response.status_code == status.HTTP_200_OK:
+        user = User.objects.get(pk=response.data["id"])
+        for k, v in body.items():
+            assert getattr(user, k) == v
