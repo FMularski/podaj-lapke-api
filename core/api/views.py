@@ -27,3 +27,15 @@ class UserMeApiView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class ChangePasswordApiView(generics.UpdateAPIView):
+    """Update user password."""
+
+    serializer_class = serializers.ChangePasswordSerializer
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ("put",)
+
+    def get_object(self):
+        return self.request.user

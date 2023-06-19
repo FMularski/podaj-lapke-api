@@ -146,6 +146,7 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Podaj Lapke is as app to help poeple get in touch with animals in shelters.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_PATCH": False,
 }
 
 CORS_ALLOWED_ORIGIN_REGEXES = env.list(

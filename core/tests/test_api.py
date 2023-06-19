@@ -199,3 +199,36 @@ def test_update_user_details(api_client_user, body, xstatus):
         user = User.objects.get(pk=response.data["id"])
         for k, v in body.items():
             assert getattr(user, k) == v
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "body, xstatus",
+    (
+        ({"old": "testpass123", "password": "nEwpass123!"}, status.HTTP_200_OK),
+        ({"old": "invalid", "password": "newPass123!"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123", "password": "weak"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123", "password": "123"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123", "password": "a1"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123", "password": "abcd1234"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123", "password": "abcD1234"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123", "password": "abcd123!"}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "", "password": ""}, status.HTTP_400_BAD_REQUEST),
+        ({"old": "testpass123"}, status.HTTP_400_BAD_REQUEST),
+        ({"password": "newPass123!"}, status.HTTP_400_BAD_REQUEST),
+        ({}, status.HTTP_400_BAD_REQUEST),
+    ),
+)
+def test_change_password(api_client, create_user, body, xstatus):
+    user = create_user(password="testpass123")
+    api_client.force_authenticate(user=user)
+    url = reverse("password")
+
+    response = api_client.put(url, data=body, format="json")
+
+    assert response.status_code == xstatus
+
+    if response.status_code == status.HTTP_200_OK:
+        user.refresh_from_db()
+        assert check_password(body["password"], user.password)
+        assert not check_password(body["old"], user.password)
