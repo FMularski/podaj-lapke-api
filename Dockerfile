@@ -3,7 +3,7 @@ FROM python:3.10-alpine
 ENV PYTHONUNBUFFERED=1
 ENV POETRY_VERSION=1.2.2
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev libffi-dev
 
 WORKDIR /code
 
